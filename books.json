@@ -4,13 +4,15 @@
     "line": "It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness.",
     "title": "A Tale of Two Cities",
     "author": "Charles Dickens",
-    "isbn": "9780141439600"
+    "isbn": "9780141439600",
+    "trivia": "This is the best-selling novel of all time, with over 200 million copies sold—more than Harry Potter or The Lord of the Rings."
   },
   {
     "date": "2025-12-24",
     "line": "Marley was dead: to begin with.",
     "title": "A Christmas Carol",
     "author": "Charles Dickens",
-    "isbn": "9780140439052"
+    "isbn": "9780140439052",
+    "trivia": "Dickens wrote this book in just six weeks because he was broke and needed money to pay off his wife's debts before Christmas."
   }
 ]

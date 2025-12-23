@@ -7,7 +7,6 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    
     <link href="https://fonts.googleapis.com/css2?family=Reenie+Beanie&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 
     <style>
@@ -57,13 +56,12 @@
         }
 
         h1 {
-            /* THE NEW FONT: REENIE BEANIE */
             font-family: 'Reenie Beanie', cursive;
-            font-size: 5rem; /* Increased size because this font is thin */
+            font-size: 5rem;
             font-weight: 400; 
             margin: 0;
             line-height: 0.8;
-            transform: rotate(-2deg); /* A slight tilt adds to the handwritten look */
+            transform: rotate(-2deg);
         }
 
         .subtitle {
@@ -138,7 +136,6 @@
         input:checked ~ .slider .icon-sun { opacity: 0.5; }
         input:checked ~ .slider .icon-moon { opacity: 1; }
 
-
         /* --- GAME AREA --- */
         #game-container {
             max-width: 580px;
@@ -202,12 +199,27 @@
         #submit-btn { border-color: var(--text-main); color: var(--text-main); font-weight: 700; }
         #submit-btn:hover { background-color: var(--text-main); color: var(--bg-color); }
 
+        /* --- HINTS & TRIVIA --- */
         #hint-display {
             margin-top: 20px;
-            color: var(--accent);
+            color: var(--text-sub);
             font-style: italic;
             opacity: 0;
             transition: opacity 0.5s;
+            font-size: 0.9rem;
+        }
+
+        #trivia-display {
+            margin-top: 15px;
+            color: var(--accent);
+            font-weight: 700;
+            opacity: 0;
+            transition: opacity 0.5s;
+            font-size: 1rem;
+            max-width: 450px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.4;
         }
 
         /* --- RESULTS --- */
@@ -264,7 +276,6 @@
         
         .social-link:hover { color: var(--accent); border-color: var(--accent); }
 
-        /* --- TEST RESET BUTTON --- */
         .test-reset-btn {
             margin-top: 30px;
             background: none;
@@ -294,20 +305,21 @@
         </div>
         
         <h1>First Line</h1>
-        <div class="subtitle"> by Read Travel Become</div>
+        <div class="subtitle">Read Travel Become</div>
     </header>
 
     <div id="game-container">
         <div id="quote-display">Loading...</div>
 
         <div id="input-area">
-            <input type="text" id="guess-input" placeholder="Guess the book by it's first line..." autocomplete="off">
+            <input type="text" id="guess-input" placeholder="Name the book..." autocomplete="off">
             <div class="controls">
                 <button onclick="checkGuess()" id="submit-btn" class="game-btn">Guess</button>
                 <button onclick="revealHint()" class="game-btn">Hint</button>
-                <button onclick="giveUp()" class="game-btn">Give Up</button>
+                <button onclick="revealTrivia()" class="game-btn">Trivia</button>
             </div>
             <div id="hint-display"></div>
+            <div id="trivia-display"></div>
             <div id="feedback" style="height: 20px; color: var(--accent); font-style: italic; margin-top:10px;"></div>
         </div>
 
@@ -315,6 +327,8 @@
             <div id="result-message" class="message"></div>
             <img id="result-cover" class="book-cover" src="" alt="Book Cover" onerror="this.style.display='none'">
             <div id="result-details"></div>
+            
+            <div id="final-trivia" style="margin-top:20px; color: var(--accent); font-weight:700; max-width:450px; margin-left:auto; margin-right:auto;"></div>
             
             <div style="font-style: italic; color: var(--text-sub); margin-top: 30px; font-size: 0.9rem;">
                 New puzzle available tomorrow.
@@ -369,8 +383,8 @@
                 }
 
                 const playedStatus = localStorage.getItem('played_' + today);
-                if (playedStatus === 'won' || playedStatus === 'lost') {
-                    endGame(playedStatus === 'won');
+                if (playedStatus === 'won') {
+                    endGame();
                 } else {
                     document.getElementById('quote-display').innerText = `“${todaysBook.line}”`;
                 }
@@ -386,13 +400,25 @@
             hintDiv.style.opacity = 1;
         }
 
+        // NEW TRIVIA FUNCTION
+        function revealTrivia() {
+            const triviaDiv = document.getElementById('trivia-display');
+            if (todaysBook.trivia) {
+                triviaDiv.innerText = `Did you know? ${todaysBook.trivia}`;
+                triviaDiv.style.opacity = 1;
+            } else {
+                triviaDiv.innerText = "No trivia available for this book.";
+                triviaDiv.style.opacity = 1;
+            }
+        }
+
         function checkGuess() {
             const userGuess = document.getElementById('guess-input').value.toLowerCase().trim();
             const cleanTitle = todaysBook.title.toLowerCase().replace(/[^\w\s]/g, '');
             const cleanGuess = userGuess.replace(/[^\w\s]/g, '');
 
             if (cleanGuess.length > 3 && cleanTitle.includes(cleanGuess)) {
-                endGame(true);
+                endGame();
             } else {
                 const feedback = document.getElementById('feedback');
                 feedback.innerText = "Incorrect.";
@@ -400,10 +426,8 @@
             }
         }
 
-        function giveUp() { endGame(false); }
-
-        function endGame(hasWon) {
-            localStorage.setItem('played_' + today, hasWon ? 'won' : 'lost');
+        function endGame() {
+            localStorage.setItem('played_' + today, 'won');
             document.getElementById('input-area').style.display = 'none';
             document.getElementById('quote-display').innerText = `“${todaysBook.line}”`;
             document.getElementById('result-modal').style.display = 'block';
@@ -413,16 +437,17 @@
             
             document.getElementById('result-details').innerHTML = `
                 <div style="font-size: 1.4rem; font-weight:700; margin-bottom:5px;">${todaysBook.title}</div>
-                <div style="text-transform:uppercase; font-size: 0.8rem; letter-spacing:1px; color: var(--accent);">${todaysBook.author}</div>
+                <div style="text-transform:uppercase; font-size: 0.8rem; letter-spacing:1px; color: var(--text-sub);">${todaysBook.author}</div>
             `;
+            
+            // Show the Trivia on the win screen too
+            if (todaysBook.trivia) {
+                document.getElementById('final-trivia').innerText = `Did you know? ${todaysBook.trivia}`;
+            }
 
             const msgDiv = document.getElementById('result-message');
-            if (hasWon) {
-                msgDiv.innerText = "Correct.";
-            } else {
-                msgDiv.innerText = "The Answer";
-                msgDiv.style.color = "var(--accent)";
-            }
+            msgDiv.innerText = "Correct.";
+            msgDiv.style.color = "#2e7d32"; // Green for success
         }
 
         document.getElementById('guess-input').addEventListener("keypress", function(event) {
