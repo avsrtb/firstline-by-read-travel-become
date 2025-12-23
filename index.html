@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>First Line</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Reenie+Beanie&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- VARIABLES --- */
+        :root {
+            --bg-color: #ffffff;
+            --text-main: #111111;
+            --text-sub: #444444;
+            --accent: #d0021b;
+            --border: #cccccc;
+            --input-border: #333333;
+            --toggle-bg: #e0e0e0;
+            --toggle-circle: #ffffff;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --text-main: #e0e0e0;
+            --text-sub: #aaaaaa;
+            --accent: #ff455e;
+            --border: #333333;
+            --input-border: #666666;
+            --toggle-bg: #444444;
+            --toggle-circle: #222222;
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--bg-color);
+            font-family: 'Libre Caslon Text', serif;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 50px 20px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* --- HEADER --- */
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            width: 100%;
+            max-width: 600px;
+            position: relative;
+        }
+
+        h1 {
+            /* THE NEW FONT: REENIE BEANIE */
+            font-family: 'Reenie Beanie', cursive;
+            font-size: 5rem; /* Increased size because this font is thin */
+            font-weight: 400; 
+            margin: 0;
+            line-height: 0.8;
+            transform: rotate(-2deg); /* A slight tilt adds to the handwritten look */
+        }
+
+        .subtitle {
+            font-family: 'Libre Caslon Text', serif;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-top: 15px;
+            font-weight: 700;
+            color: var(--text-sub);
+        }
+
+        /* --- TOGGLE SWITCH --- */
+        .theme-switch-wrapper {
+            position: absolute;
+            top: 5px;
+            right: 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .theme-switch {
+            display: inline-block;
+            height: 24px;
+            position: relative;
+            width: 50px;
+        }
+        
+        .theme-switch input { display:none; }
+        
+        .slider {
+            background-color: var(--toggle-bg);
+            bottom: 0;
+            cursor: pointer;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            transition: .4s;
+            border-radius: 34px;
+            border: 1px solid var(--border);
+        }
+        
+        .slider:before {
+            background-color: var(--toggle-circle);
+            bottom: 3px;
+            content: "";
+            height: 16px;
+            left: 4px;
+            position: absolute;
+            transition: .4s;
+            width: 16px;
+            border-radius: 50%;
+            z-index: 2;
+        }
+
+        .icon-sun, .icon-moon {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            fill: var(--text-sub);
+            transition: opacity 0.3s;
+        }
+        
+        .icon-sun { left: 6px; opacity: 1; }
+        .icon-moon { right: 6px; opacity: 0.5; }
+        
+        input:checked + .slider { background-color: var(--toggle-bg); }
+        input:checked + .slider:before { transform: translateX(24px); }
+        input:checked ~ .slider .icon-sun { opacity: 0.5; }
+        input:checked ~ .slider .icon-moon { opacity: 1; }
+
+
+        /* --- GAME AREA --- */
+        #game-container {
+            max-width: 580px;
+            width: 100%;
+            text-align: center;
+        }
+
+        #quote-display {
+            font-family: 'Libre Caslon Text', serif;
+            font-size: 1.5rem;
+            line-height: 1.6;
+            font-weight: 400;
+            margin-bottom: 50px;
+            min-height: 100px;
+        }
+
+        /* --- INPUT --- */
+        input[type="text"] {
+            width: 100%;
+            max-width: 300px;
+            padding: 10px 0;
+            font-size: 1.2rem;
+            font-family: 'Libre Caslon Text', serif;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--input-border);
+            text-align: center;
+            outline: none;
+            color: var(--text-main);
+            margin-bottom: 30px;
+            border-radius: 0;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus { border-bottom: 2px solid var(--text-main); }
+        input[type="text"]::placeholder { font-style: italic; color: var(--text-sub); opacity: 0.5; }
+
+        /* --- BUTTONS --- */
+        .controls {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        button.game-btn {
+            font-family: 'Libre Caslon Text', serif;
+            background: transparent;
+            border: 1px solid var(--border);
+            padding: 8px 20px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-sub);
+        }
+
+        button.game-btn:hover { border-color: var(--text-main); color: var(--text-main); }
+
+        #submit-btn { border-color: var(--text-main); color: var(--text-main); font-weight: 700; }
+        #submit-btn:hover { background-color: var(--text-main); color: var(--bg-color); }
+
+        #hint-display {
+            margin-top: 20px;
+            color: var(--accent);
+            font-style: italic;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        /* --- RESULTS --- */
+        #result-modal {
+            display: none;
+            margin-top: 20px;
+            border-top: 1px solid var(--border);
+            padding-top: 30px;
+            animation: fadeIn 0.8s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .book-cover {
+            width: 110px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            margin-bottom: 25px;
+            border: 1px solid var(--border);
+        }
+
+        .message {
+            font-family: 'Libre Caslon Text', serif;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        /* --- SOCIAL --- */
+        .social-box {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 4px double var(--text-main);
+            max-width: 100%;
+        }
+
+        .social-cta {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .social-link {
+            display: inline-block;
+            margin: 0 10px;
+            text-decoration: none;
+            font-family: 'Libre Caslon Text', serif;
+            font-style: italic;
+            font-size: 1.1rem;
+            color: var(--text-main);
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .social-link:hover { color: var(--accent); border-color: var(--accent); }
+
+        /* --- TEST RESET BUTTON --- */
+        .test-reset-btn {
+            margin-top: 30px;
+            background: none;
+            border: 1px dashed var(--text-sub);
+            color: var(--text-sub);
+            padding: 5px 10px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            font-family: sans-serif;
+            text-transform: uppercase;
+        }
+        .test-reset-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="theme-switch-wrapper">
+            <label class="theme-switch" for="checkbox">
+                <input type="checkbox" id="checkbox" onclick="toggleTheme()" />
+                <div class="slider">
+                    <svg class="icon-sun" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58a.996.996 0 00-1.41 0 .996.996 0 000 1.41l1.29 1.29c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L5.99 4.58zm12.37 12.37a.996.996 0 00-1.41 0 .996.996 0 000 1.41l1.29 1.29c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41l-1.29-1.29zm1.41-13.77c-.39-.39-1.02-.39-1.41 0a.996.996 0 000 1.41l1.29 1.29c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41l-1.29-1.29zm-13.77 13.77a.996.996 0 000 1.41c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41l-1.29-1.29a.996.996 0 00-1.41 0z"/></svg>
+                    <svg class="icon-moon" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-3.03 0-5.5-2.47-5.5-5.5 0-1.82.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>
+                </div>
+            </label>
+        </div>
+        
+        <h1>First Line</h1>
+        <div class="subtitle"> by Read Travel Become</div>
+    </header>
+
+    <div id="game-container">
+        <div id="quote-display">Loading...</div>
+
+        <div id="input-area">
+            <input type="text" id="guess-input" placeholder="Guess the book by it's first line..." autocomplete="off">
+            <div class="controls">
+                <button onclick="checkGuess()" id="submit-btn" class="game-btn">Guess</button>
+                <button onclick="revealHint()" class="game-btn">Hint</button>
+                <button onclick="giveUp()" class="game-btn">Give Up</button>
+            </div>
+            <div id="hint-display"></div>
+            <div id="feedback" style="height: 20px; color: var(--accent); font-style: italic; margin-top:10px;"></div>
+        </div>
+
+        <div id="result-modal">
+            <div id="result-message" class="message"></div>
+            <img id="result-cover" class="book-cover" src="" alt="Book Cover" onerror="this.style.display='none'">
+            <div id="result-details"></div>
+            
+            <div style="font-style: italic; color: var(--text-sub); margin-top: 30px; font-size: 0.9rem;">
+                New puzzle available tomorrow.
+            </div>
+
+            <button onclick="resetGame()" class="test-reset-btn">
+                ↻ Reset (Test Mode)
+            </button>
+
+            <div class="social-box">
+                <div class="social-cta">More from the editors</div>
+                <a href="https://www.youtube.com/@ReadTravelBecome" target="_blank" class="social-link">YouTube</a>
+                <a href="https://readtravelbecome.substack.com/" target="_blank" class="social-link">Substack</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let todaysBook = null;
+        const today = new Date().toLocaleDateString('en-CA'); 
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            const checkbox = document.getElementById('checkbox');
+            checkbox.checked = savedTheme === 'dark';
+        }
+        
+        function toggleTheme() {
+            const checkbox = document.getElementById('checkbox');
+            const newTheme = checkbox.checked ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        function resetGame() {
+            localStorage.removeItem('played_' + today);
+            location.reload();
+        }
+
+        async function loadGame() {
+            initTheme(); 
+            try {
+                const response = await fetch('books.json');
+                const books = await response.json();
+                todaysBook = books.find(b => b.date === today);
+
+                if (!todaysBook) {
+                    document.getElementById('quote-display').innerText = "No puzzle scheduled for " + today + ".";
+                    document.getElementById('input-area').style.display = 'none';
+                    return;
+                }
+
+                const playedStatus = localStorage.getItem('played_' + today);
+                if (playedStatus === 'won' || playedStatus === 'lost') {
+                    endGame(playedStatus === 'won');
+                } else {
+                    document.getElementById('quote-display').innerText = `“${todaysBook.line}”`;
+                }
+            } catch (error) {
+                console.error(error);
+                document.getElementById('quote-display').innerText = "Error loading library.";
+            }
+        }
+
+        function revealHint() {
+            const hintDiv = document.getElementById('hint-display');
+            hintDiv.innerText = `By ${todaysBook.author}`;
+            hintDiv.style.opacity = 1;
+        }
+
+        function checkGuess() {
+            const userGuess = document.getElementById('guess-input').value.toLowerCase().trim();
+            const cleanTitle = todaysBook.title.toLowerCase().replace(/[^\w\s]/g, '');
+            const cleanGuess = userGuess.replace(/[^\w\s]/g, '');
+
+            if (cleanGuess.length > 3 && cleanTitle.includes(cleanGuess)) {
+                endGame(true);
+            } else {
+                const feedback = document.getElementById('feedback');
+                feedback.innerText = "Incorrect.";
+                setTimeout(() => feedback.innerText = "", 2000);
+            }
+        }
+
+        function giveUp() { endGame(false); }
+
+        function endGame(hasWon) {
+            localStorage.setItem('played_' + today, hasWon ? 'won' : 'lost');
+            document.getElementById('input-area').style.display = 'none';
+            document.getElementById('quote-display').innerText = `“${todaysBook.line}”`;
+            document.getElementById('result-modal').style.display = 'block';
+
+            const coverUrl = `https://covers.openlibrary.org/b/isbn/${todaysBook.isbn}-L.jpg`;
+            document.getElementById('result-cover').src = coverUrl;
+            
+            document.getElementById('result-details').innerHTML = `
+                <div style="font-size: 1.4rem; font-weight:700; margin-bottom:5px;">${todaysBook.title}</div>
+                <div style="text-transform:uppercase; font-size: 0.8rem; letter-spacing:1px; color: var(--accent);">${todaysBook.author}</div>
+            `;
+
+            const msgDiv = document.getElementById('result-message');
+            if (hasWon) {
+                msgDiv.innerText = "Correct.";
+            } else {
+                msgDiv.innerText = "The Answer";
+                msgDiv.style.color = "var(--accent)";
+            }
+        }
+
+        document.getElementById('guess-input').addEventListener("keypress", function(event) {
+            if (event.key === "Enter") checkGuess();
+        });
+
+        loadGame();
+    </script>
+</body>
+</html>
