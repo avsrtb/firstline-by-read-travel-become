@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -20,8 +20,11 @@
             --input-border: #333333;
             --toggle-bg: #e0e0e0;
             --toggle-circle: #ffffff;
+            /* Light Mode Torch: Subtle warm sunbeam */
+            --torch-color: rgba(255, 230, 150, 0.25); 
         }
 
+        /* Dark Theme Variables */
         [data-theme="dark"] {
             --bg-color: #121212;
             --text-main: #e0e0e0;
@@ -31,11 +34,12 @@
             --input-border: #666666;
             --toggle-bg: #444444;
             --toggle-circle: #222222;
+            /* Dark Mode Torch: Candlelight in the dark */
+            --torch-color: rgba(255, 220, 100, 0.12); 
         }
 
         body {
             margin: 0;
-            background-color: var(--bg-color);
             font-family: 'Libre Caslon Text', serif;
             color: var(--text-main);
             display: flex;
@@ -43,16 +47,41 @@
             align-items: center;
             min-height: 100vh;
             padding: 50px 20px;
-            transition: background-color 0.3s, color 0.3s;
+            
+            /* --- THE TORCHLIGHT ENGINE --- */
+            background-color: var(--bg-color);
+            /* The gradient moves based on --x and --y variables set by JS */
+            background-image: radial-gradient(
+                circle 600px at var(--x, 50%) var(--y, 50%), 
+                var(--torch-color), 
+                transparent 40%
+            );
+            background-attachment: fixed; /* Keeps the light steady when scrolling */
+            transition: background-color 0.5s ease, color 0.5s ease;
         }
 
-        /* --- HEADER --- */
+        /* --- ANIMATIONS --- */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         header {
+            animation: fadeInUp 0.8s ease-out forwards;
+            opacity: 0;
             text-align: center;
             margin-bottom: 60px;
             width: 100%;
             max-width: 600px;
             position: relative;
+        }
+
+        #game-container {
+            animation: fadeInUp 0.8s ease-out 0.3s forwards;
+            opacity: 0;
+            max-width: 580px;
+            width: 100%;
+            text-align: center;
         }
 
         h1 {
@@ -136,13 +165,7 @@
         input:checked ~ .slider .icon-sun { opacity: 0.5; }
         input:checked ~ .slider .icon-moon { opacity: 1; }
 
-        /* --- GAME AREA --- */
-        #game-container {
-            max-width: 580px;
-            width: 100%;
-            text-align: center;
-        }
-
+        /* --- QUOTE & INPUT --- */
         #quote-display {
             font-family: 'Libre Caslon Text', serif;
             font-size: 1.5rem;
@@ -152,7 +175,6 @@
             min-height: 100px;
         }
 
-        /* --- INPUT --- */
         input[type="text"] {
             width: 100%;
             max-width: 300px;
@@ -192,9 +214,11 @@
             cursor: pointer;
             transition: all 0.2s;
             color: var(--text-sub);
+            /* Make buttons solid enough to be read over the torchlight */
+            backdrop-filter: blur(2px); 
         }
 
-        button.game-btn:hover { border-color: var(--text-main); color: var(--text-main); }
+        button.game-btn:hover { border-color: var(--text-main); color: var(--text-main); transform: translateY(-2px); }
 
         #submit-btn { border-color: var(--text-main); color: var(--text-main); font-weight: 700; }
         #submit-btn:hover { background-color: var(--text-main); color: var(--bg-color); }
@@ -228,17 +252,18 @@
             margin-top: 20px;
             border-top: 1px solid var(--border);
             padding-top: 30px;
-            animation: fadeIn 0.8s ease;
+            animation: fadeInUp 0.6s ease-out;
         }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .book-cover {
             width: 110px;
             box-shadow: 0 10px 20px rgba(0,0,0,0.3);
             margin-bottom: 25px;
             border: 1px solid var(--border);
+            transition: transform 0.3s ease;
         }
+        
+        .book-cover:hover { transform: scale(1.05); }
 
         .message {
             font-family: 'Libre Caslon Text', serif;
@@ -350,11 +375,24 @@
         let todaysBook = null;
         const today = new Date().toLocaleDateString('en-CA'); 
 
+        // --- THEME LOGIC (SYNC + MANUAL) ---
         function initTheme() {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-theme', savedTheme);
+            const savedTheme = localStorage.getItem('theme');
             const checkbox = document.getElementById('checkbox');
-            checkbox.checked = savedTheme === 'dark';
+
+            if (savedTheme) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                checkbox.checked = (savedTheme === 'dark');
+            } else {
+                const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (systemPrefersDark) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    checkbox.checked = true;
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                    checkbox.checked = false;
+                }
+            }
         }
         
         function toggleTheme() {
@@ -364,11 +402,19 @@
             localStorage.setItem('theme', newTheme);
         }
 
+        // --- MOUSE TRACKER FOR TORCHLIGHT ---
+        document.addEventListener('mousemove', (e) => {
+            document.body.style.setProperty('--x', e.clientX + 'px');
+            document.body.style.setProperty('--y', e.clientY + 'px');
+        });
+
+        // --- GAME RESET ---
         function resetGame() {
             localStorage.removeItem('played_' + today);
             location.reload();
         }
 
+        // --- MAIN GAME LOAD ---
         async function loadGame() {
             initTheme(); 
             try {
@@ -400,7 +446,6 @@
             hintDiv.style.opacity = 1;
         }
 
-        // NEW TRIVIA FUNCTION
         function revealTrivia() {
             const triviaDiv = document.getElementById('trivia-display');
             if (todaysBook.trivia) {
@@ -440,14 +485,13 @@
                 <div style="text-transform:uppercase; font-size: 0.8rem; letter-spacing:1px; color: var(--text-sub);">${todaysBook.author}</div>
             `;
             
-            // Show the Trivia on the win screen too
             if (todaysBook.trivia) {
                 document.getElementById('final-trivia').innerText = `Did you know? ${todaysBook.trivia}`;
             }
 
             const msgDiv = document.getElementById('result-message');
             msgDiv.innerText = "Correct.";
-            msgDiv.style.color = "#2e7d32"; // Green for success
+            msgDiv.style.color = "#2e7d32"; 
         }
 
         document.getElementById('guess-input').addEventListener("keypress", function(event) {
